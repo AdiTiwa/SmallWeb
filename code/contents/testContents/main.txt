@@ -1,3 +1,0 @@
-commit(label('New Text', fg = 'white', bg = 'black', width = 10, height= 5))
-commit(button('New Button Test', width = 4, height = 2))
-img('test .gif', width = 50, height = 500)

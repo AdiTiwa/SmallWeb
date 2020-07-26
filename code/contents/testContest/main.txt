@@ -1,0 +1,4 @@
+commit(label('New Label', fg = 'white', bg = 'black', width = 10, height = 10))
+commit(button('New Button', fg = 'white', bg = 'black', width = 5, height = 2.5))
+//This is a comment
+endProj

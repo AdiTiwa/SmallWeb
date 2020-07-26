@@ -7,37 +7,11 @@ HEADER = 64
 PORT = 5050
 FORMAT = 'utf-8'
 DISCONNECT = '!disconnect!'
-SERVER = socket.gethostbyname(socket.gethostname())
+SERVER = '192.168.1.147'
 ADDR = (SERVER, PORT)
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-try:
-    client.connect(ADDR)
-    
-    #tkinter code
-    #Searchbar
-    searchbar = tk.Frame()
-    searchbar.pack()
-    search = tk.Entry(
-        master = searchbar
-    )
-    search.grid(row = 0, column = 0, columnspan = 4)
-    searchButton = tk.Button(
-        text = u'✓',
-        master = searchbar
-    )
-    searchButton.grid(row = 0, column = 4)
-
-    #Screens
-    screen = tk.Frame()
-    screen.pack()
-except:
-    print("There is an error, and the server may not be online right now.")
-    print("Run the server script on another computer on the same wifi.")
-    print("It is recomended for you to run the server scripts on the ")
-    print("command prompt->")
-    print("Mac & Linux: python3 server.py")
-    print("Windows: python server.py")
+client.connect((SERVER, PORT))
 
 def send(msg):
     message = msg.encode(FORMAT)
@@ -47,33 +21,50 @@ def send(msg):
     client.send(send_length)
     client.send(message)
 
+
+
 def start():
     searchbar.pack()
     search.grid(row = 0, column = 0, columnspan = 4)
     searchButton.grid(row = 0, column = 4)
     
     screen.pack()
-
     window.mainloop()
+    connected = True
+    header = client.recv(HEADER).decode()
+    while connected:
+        header = client.recv(HEADER).decode()
+        if header:
+            header = int(header)
+            fileName = client.recv(header).decode()
+            if fileName:
+                if fileName[0] == '1' and fileName[1] == '9' and fileName[2] == '2':
+                    for x in range(0, 3):
+                        fileName.pop(0)
+                    parse(fileName)
+            else:
+                continue
 
-
-
+def search():
+    searchInput = search.get()
+    send('1.1.1' + searchInput)
 
 # Functions for writing code for the program to read
-def parser(file):
+def parse(file):
     parserTrue = False
     f = open(file, 'r')
     line = 1
     while parserTrue:
-        if(f.read(line) == ' '):
+        if(f.readline(line) == ' '):
             continue
-        elif(f.read(line) == 'endProj'):
+        elif(f.readline(line) == 'endProj'):
             break
-        elif(f.read(line)[0] == '/' and f.read(line)[1] == '/'):
+        elif(f.readline(line)[0] == '/' and f.readline(line)[1] == '/'):
             continue
         else:
-            exec(f.read(line))
+            exec(f.readline(line))
             line += 1
+    f.close()
 
 
 
@@ -125,3 +116,24 @@ def img(src, Width, Height):
 def commit(entry):
     entry.pack()
 
+#tkinter code
+#Searchbar
+searchbar = tk.Frame()
+searchbar.pack()
+search = tk.Entry(
+    master = searchbar
+)
+search.grid(row = 0, column = 0, columnspan = 8)
+searchButton = tk.Button(
+    text = u'✓',
+    master = searchbar
+)
+searchButton.grid(row = 0, column = 7)
+
+#Screens
+screen = tk.Frame()
+screen.pack()
+
+searchButton.bind("<Button-1>", search)
+
+start()
