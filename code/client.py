@@ -45,9 +45,23 @@ def start():
             else:
                 continue
 
-def search():
+def searchFunc():
     searchInput = search.get()
-    send('1.1.1' + searchInput)
+    if searchInput.endswith('.local') and searchInput.startswith('0.'):
+        send(searchInput)
+        file = recv()
+        parse(file)
+    elif searchInput.endswith('.local') and not(searchInput.startswith('0.')):
+        send('0.' + searchInput)
+    else:
+        send('0.' + searchInput + '.local')
+
+def recv():
+    header = client.recv(HEADER).decode(FORMAT)
+    if header:
+        header = int(header)
+        msg = client.recv(header).decode(FORMAT)
+        return msg
 
 # Functions for writing code for the program to read
 def parse(file):
@@ -66,74 +80,33 @@ def parse(file):
             line += 1
     f.close()
 
-
-
-def label(msg, *args, **kwargs):
-    fgColor = kwargs.get('fg', None)
-    bgColor = kwargs.get('bg', None)
-    width = kwargs.get('width', None)
-    height = kwargs.get('height', None)
-    newLabel = tk.Label(
-        master = screen,
-        text = msg,
-        foreground = fgColor,
-        background = bgColor,
-        width = width,
-        height = height
-    )
-    return newLabel
-
-def button(text, *args, **kwargs):
-    fgColor = kwargs.get('fg', None)
-    bgColor = kwargs.get('bg', None)
-    width = kwargs.get('width', None)
-    height = kwargs.get('height', None)
-    newButton = tk.Button(
-        master = screen,
-        text = text,
-        fg = fgColor,
-        bg = bgColor,
-        width = width,
-        height = height
-    )
-    return newButton
-
-def img(src, Width, Height):
-    canvas = tk.Canvas(
-        master = screen,
-        width = Width,
-        height = Height
-    )
-    canvas.pack()
-    img = tk.PhotoImage(file = src)
-    canvas.create_image(
-        0,
-        0, 
-        anchor = 'NW',
-        image = img
-    )
-
-def commit(entry):
-    entry.pack()
+def closeFunc():
+    send(DISCONNECT)
+    window.destroy()
 
 #tkinter code
 #Searchbar
 searchbar = tk.Frame()
 searchbar.pack()
 search = tk.Entry(
-    master = searchbar
+    master = searchbar,
 )
-search.grid(row = 0, column = 0, columnspan = 8)
+search.grid(row = 0, column = 3, columnspan = 9)
 searchButton = tk.Button(
     text = u'✓',
-    master = searchbar
+    master = searchbar,
+    command = searchFunc
 )
-searchButton.grid(row = 0, column = 7)
+searchButton.grid(row = 0, column = 11)
+close = tk.Button(
+    text = u'✘',
+    master = searchbar,
+    command = closeFunc
+)
+close.grid(row = 0, column = 12)
 
 #Screens
 screen = tk.Frame()
 screen.pack()
-
-searchButton.bind("<Button-1>", search)
 
 start()
