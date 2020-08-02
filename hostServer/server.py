@@ -6,3 +6,17 @@
 import socket
 import threading
 import time
+from serverObject import hostServers
+
+hostServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+hostServer.bind((socket.gethostbyname(socket.gethostname()), 5050))
+
+knownIps = [
+
+]
+knownDomains = [
+
+]
+
+server = hostServer(hostServer, socket.gethostbyname(socket.gethostname()), knownDomains, knownIps)
+server.start()

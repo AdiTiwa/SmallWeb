@@ -13,6 +13,22 @@ ADDR = (SERVER, PORT)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((SERVER, PORT))
 
+def objectify(str):
+    return [char for char in str] 
+
+def deleteStrs(str, *args, **kwargs):
+    fromStart = kwargs.get('start', None)
+    fromEnd = kwargs.get('end', None)
+    str = objectify(str)
+    for x in range(0, fromStart + 1):
+        str.pop(0)
+    for x in range(0, fromEnd + 1):
+        str.pop(-1)
+    returnString = ''
+    for letter in str:
+        returnString += letter
+    return returnString
+
 def send(msg):
     message = msg.encode(FORMAT)
     msg_length = len(message)
@@ -20,8 +36,6 @@ def send(msg):
     send_length += b' ' * (HEADER - len(send_length))
     client.send(send_length)
     client.send(message)
-
-
 
 def start():
     searchbar.pack()
@@ -37,24 +51,21 @@ def start():
         if header:
             header = int(header)
             fileName = client.recv(header).decode()
-            if fileName:
-                if fileName[0] == '1' and fileName[1] == '9' and fileName[2] == '2':
-                    for x in range(0, 3):
-                        fileName.pop(0)
-                    parse(fileName)
-            else:
-                continue
+            
 
 def searchFunc():
     searchInput = search.get()
     if searchInput.endswith('.local') and searchInput.startswith('0.'):
-        send(searchInput)
-        file = recv()
-        parse(file)
+        searchInput = deleteStrs(searchInput, start = 2, end = 6)
+        searchLocalURL(searchInput)
     elif searchInput.endswith('.local') and not(searchInput.startswith('0.')):
-        send('0.' + searchInput)
+        searchInput = deleteStrs(searchInput, end = 6)
+        searchLocalURL(searchInput)
+    elif searchInput.startsWith('0.'):
+        searchInput = deleteStrs(searchInput, start = 2)
+        searchLocalURL(searchInput)
     else:
-        send('0.' + searchInput + '.local')
+        pass
 
 def recv():
     header = client.recv(HEADER).decode(FORMAT)
@@ -63,22 +74,21 @@ def recv():
         msg = client.recv(header).decode(FORMAT)
         return msg
 
-# Functions for writing code for the program to read
-def parse(file):
-    parserTrue = False
-    f = open(file, 'r')
-    line = 1
-    while parserTrue:
-        if(f.readline(line) == ' '):
-            continue
-        elif(f.readline(line) == 'endProj'):
-            break
-        elif(f.readline(line)[0] == '/' and f.readline(line)[1] == '/'):
-            continue
-        else:
-            exec(f.readline(line))
-            line += 1
+def searchLocalURL(searchWord):
+    searchWord = searchWord + '.txt'
+    f = open('searchWord', 'r')
+    Keywords = []
+    Atributes = []
+    exec(f.read())
     f.close()
+
+def parse(file):
+    f = open(file, 'r')
+    exec(f.read())
+    f.close()
+
+# Functions for writing code for the program to read
+
 
 def closeFunc():
     send(DISCONNECT)
