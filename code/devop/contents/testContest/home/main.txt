@@ -1,3 +1,9 @@
+attrs = []
+keys = []
+res = {
+    'domain': '1.1.1'
+}
+
 label = tk.Label(
     master = screen,
     text = 'New Label',
