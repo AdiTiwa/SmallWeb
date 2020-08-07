@@ -110,6 +110,7 @@ class server:
     def fileSearch(self, search, domain):
         if self.domain == domain:
             filetranslate = str.maketrans('.', '/')
+            filetranslate += '.txt'
             try:
                 f = search.translate(filetranslate)
                 if f.read():
@@ -130,9 +131,8 @@ class server:
             for ip in self.databaseIPs:
                 if self.databaseDomains[searchFor(ip, self.databaseIPs, index = True)] == domain:
                     self.querySocket.connect((ip, 5050))
-                    self.querySocket.send('DQ S.', 'querySocket')
-                    self.querySocket.send(f'DQ F.{search}', 'querySocket')
-        
+                    self.send('DQ S.', 'querySocket')
+                    self.send(f'DQ F.{search}', 'querySocket')
     
     def recvFile(self, serverObject):
         f = ''
@@ -143,7 +143,7 @@ class server:
             exec(f'filename = self.{serverObject}.recv(self.HEADER).decode(self.FORMAT)')
             exec(f"filesize = self.{serverObject}.recv(self.HEADER).decode(self.FORMAT)")
         else:
-            pass
+            return False
         
 
     def sendFile(self, fileLoc, serverObject):
@@ -203,8 +203,6 @@ class server:
         for batch in object:
             send = code.encode(self.FORMAT) + batch
             exec(f"self.send({send}, {socketObject}, encoded = True)")
-
-
 
     def rcv(self, *args, **kwargs):
         header = ''

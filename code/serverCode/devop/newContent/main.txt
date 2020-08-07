@@ -1,0 +1,14 @@
+res = {
+    'file1': 'devop/newContent/pic.img'
+}
+def onPress():
+    newLabel = tk.Label(
+        master = screen,
+        text = 'haha, Its now a button'
+    )
+    newLabel.pack()
+label = tk.Label(
+    master = screen,
+    text = 'This is a label'
+)
+label.pack()

@@ -1,6 +1,7 @@
 import socket
 import threading
 import os
+import string
 import tkinter as tk
 
 def objectify(str):
@@ -60,9 +61,6 @@ class client:
         self.searchInputMain = tk.Entry(
             master = self.searchbar
         )
-        self.searchInputDomain = tk.Entry(
-            master = self.searchbar
-        )
         self.searchConfirm = tk.Button(
             master = self.searchbar,
             text = u'✓',
@@ -76,8 +74,7 @@ class client:
             master = self.window
         )
         self.searchbar.pack()
-        self.searchInputMain.grid(row = 0, column = 0, columnspan = 12)
-        self.searchInputDomain.grid(row = 0, column = 12, columnspan = 5)
+        self.searchInputMain.grid(row = 0, column = 0, columnspan = 17)
         self.searchConfirm.grid(row = 0, column = 17, columnspan = 2)
         self.endSession.grid(row = 0, column = 19)
         self.screen.pack()
@@ -104,10 +101,14 @@ class client:
         self.client.send(message)
 
     def search(self):
-        searchInputMain = self.searchInputMain.get()
-        searchInputDomain = self.searchInputDomain.get()
-        if searchInputDomain.endswith('local'):
-            pass
+        searchInput = self.searchInputMain.get()
+        if searchInput.endswith('local'):
+            searchInput = str.translate('.', '/')
+            searchInput += '.txt'
+            res = {}
+            f = open(searchInput, 'r')
+            exec(f.read())
+            
 
     def exitSession(self):
         self.send(self.DISCONNECT)
