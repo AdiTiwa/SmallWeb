@@ -44,7 +44,6 @@ class server:
     def __init__(self, ip, knownIPs, knownDomains, domain, *args, **kwargs):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind((ip, 5050))
-        self.querySocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ip = ip
         self.domain = domain
         self.databaseIPs = knownIPs
@@ -55,7 +54,7 @@ class server:
         self.BUFFER = 1024
         self.DISCONNECT = "!disconnect!"
         self.FORMAT = 'utf-8'
-        self.recognition = '!recoognition!'
+        self.recognition = '!recognition!'
         self.domainQueriesIps = [
 
         ]
@@ -128,11 +127,7 @@ class server:
             except:
                 pass
         else:
-            for ip in self.databaseIPs:
-                if self.databaseDomains[searchFor(ip, self.databaseIPs, index = True)] == domain:
-                    self.querySocket.connect((ip, 5050))
-                    self.send('DQ S.', 'querySocket')
-                    self.send(f'DQ F.{search}', 'querySocket')
+            self.send('FN', 'server')
     
     def recvFile(self, serverObject):
         f = ''

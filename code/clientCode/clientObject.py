@@ -22,93 +22,68 @@ def deleteStrs(str, *args, **kwargs):
         returnString += letter
     return returnString
 
-def searchFor(searchObject, inObject):
-    returnNumber = 0
-    for object in inObject:
-        if object == searchObject:
-            return returnNumber
-        else:
-            returnNumber += 1
-        return returnNumber
+def searchFor(searchObject, toSearch, *args, **kwargs):
+    needIndex = kwargs.get('index', False)
+    needFind = kwargs.get('isfound', True)
+    if needIndex:
+        needFind = False
+    if needIndex:
+        returnNumber = 0
+        for item in toSearch:
+            if item == searchObject:
+                return returnNumber
+            else:
+                returnNumber += 1
+    elif needFind:
+        for item in toSearch:
+            if item == searchObject:
+                return True
+        return False
 
 class client:
-    def __init__(self, knownIps, knownDomains):
-        self.knownIps = knownIps
+    def __init__(self, knownDomains, knownIPs):
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.knownDomains = knownDomains
+        self.knownIPs = knownIPs
+        self.SERVER = ''
+        self.PORT = 5050
         self.HEADER = 1024
         self.BUFFER = 1024
-        self.SERVER = socket.gethostbyname(socket.gethostname())
-        self.PORT = 5050
-        self.ADDR = (self.SERVER, self.PORT)
-        self.FORMAT = 'utf-8'
-        self.RECOGNITION = '!recognition!'
         self.DISCONNECT = '!disconnect!'
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.connect(self.ADDR)
-        self.files = []
-        self.init()
+        self.RECOGNITION = '!recognition!'
+        self.FORMAT = 'utf-8'
 
-    def init(self):
-        #first file check
-        
-
-        #tkinter code
+    def start(self):
         self.window = tk.Tk()
-        #searchbar frame
-        self.searchbar = tk.Frame(
+        self.searchbarFrame = tk.Frame(
             master = self.window
         )
-        self.searchInputMain = tk.Entry(
-            master = self.searchbar
+        self.searchbar = tk.Entry(
+            master = self.searchbarFrame
         )
         self.searchConfirm = tk.Button(
-            master = self.searchbar,
-            text = u'✓',
+            master = self.searchbarFrame,
+            text = 'Search',
+            command = self.search
         )
-        self.endSession = tk.Button(
-            master = self.searchbar,
-            text = u'✘',
-            comand = self.exitSession
-        )
-        self.screen = tk.Frame(
-            master = self.window
-        )
-        self.searchbar.pack()
-        self.searchInputMain.grid(row = 0, column = 0, columnspan = 17)
-        self.searchConfirm.grid(row = 0, column = 17, columnspan = 2)
-        self.endSession.grid(row = 0, column = 19)
-        self.screen.pack()
-        self.window.mainloop()
 
-    def send(self, msg, *args, **kwargs):
-        searchProtocol = kwargs.get('protocol', "")
-        encoded = kwargs.get('encoded', False)
-        if encoded and searchProtocol:
-            msg = msg.decode(self.FORMAT)
-            msg = searchProtocol + msg
-            message = msg.encode(self.FORMAT)
-        elif not(encoded) and searchProtocol:
-            msg = searchProtocol + msg
-            message = msg.encode(self.FORMAT)
-        elif encoded and not(searchProtocol):
-            message = msg
-        else:
-            message = msg.encode(self.FORMAT)
-        msg_length = len(message)
-        send_length  = str(msg_length).encode(self.FORMAT)
-        send_length += b' ' * (self.HEADER - len(send_length))
-        self.client.send(send_length)
-        self.client.send(message)
+        self.searchbarFrame.pack()
+        self.searchbar.grid(row = 0, column = 0, columnspan = 17)
+        self.searchConfirm.grid(row = 0, column = 17, colummspan = 2)
 
     def search(self):
-        searchInput = self.searchInputMain.get()
-        if searchInput.endswith('local'):
+        searchInput = self.searchbar.get()
+        if searchInput.startswith('local'):
             searchInput = str.translate('.', '/')
-            searchInput += '.txt'
-            res = {}
-            f = open(searchInput, 'r')
-            exec(f.read())
-            
+            try:
+                f = open(searchInput, 'r')
+                exec(f.read())
+            except:
+                pass
 
-    def exitSession(self):
-        self.send(self.DISCONNECT)
+    def send(self, msg):
+        message = msg.encode(self.FORMAT)
+        message_length = len(message)
+        send_length = str(message_length)
+        send_length += b' ' * (self.HEADER - len(send_length))
+        
