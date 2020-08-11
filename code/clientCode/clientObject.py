@@ -5,7 +5,7 @@ import string
 import tkinter as tk
 
 def objectify(str):
-    return [char for char in str] 
+    return [char for char in str]
 
 def deleteStrs(str, *args, **kwargs):
     fromStart = kwargs.get('start', None)
@@ -69,21 +69,73 @@ class client:
 
         self.searchbarFrame.pack()
         self.searchbar.grid(row = 0, column = 0, columnspan = 17)
-        self.searchConfirm.grid(row = 0, column = 17, colummspan = 2)
+        self.searchConfirm.grid(row = 0, column = 17, columnspan = 2)
+
+        self.window.mainloop()
 
     def search(self):
         searchInput = self.searchbar.get()
         if searchInput.startswith('local'):
             searchInput = str.translate('.', '/')
+            searchInput += '.txt'
+            search = './' + searchInput
             try:
-                f = open(searchInput, 'r')
-                exec(f.read())
+                exec(open(search).read(), {'self': self, 'tk': tk})
             except:
-                pass
+                exec(open('error.txt').read(), {'self': self, 'tk': tk})
+        else:
+            tempIp = ''
+            for domain in self.knownDomains:
+                if searchInput.startswith(domain):
+                    tempIp = self.knownIPs[searchFor(domain, self.knownDomains, index = True)]
+                    break
+            if tempIp:
+                addr = (tempIp, 5050)
+                self.client.connect(addr)
+                self.send('DQ. R')
+                newMsg = self.recv()
+                if newMsg == self.RECOGNITION:
+                    self.send(searchInput, format = 'DQ.')
+                    newMsg = self.recv()
+                    if newMsg.startswith('F.'):
+                        self.recvFile()
+                    newMsg = self.recv()
+                    if newMsg == 'Res.':
+                        req = True
+                        while req:
+                            newMsg = self.recv()
+                            if not newMsg == 'Res. E':
+                                self.recvFile()
+                            else:
+                                req = False
+                    filename = self.recv()
+                    exec(f'toParse/{filename}')
 
-    def send(self, msg):
+    def recvFile(self):
+        filename = deleteStrs(self.recv(), start = 2)
+        filesize = deleteStrs(self.recv(), start = 2)
+        with open(filename, 'wb') as f:
+            needed = True
+            while needed:
+                bytesRead = self.recv()
+                if not bytesRead:
+                    needed = False
+                    break
+                f.write(bytesRead)
+
+    def recv(self):
+        header = self.client.recv(self.HEADER).decode(self.FORMAT)
+        if header:
+            header = int(header)
+            msg = self.client.recv(header).decode(self.FORMAT)
+            return msg
+
+    def send(self, msg, *args, **kwargs):
+        formatting = kwargs.get('format', '')
+        msg = formatting + msg
         message = msg.encode(self.FORMAT)
         message_length = len(message)
         send_length = str(message_length)
         send_length += b' ' * (self.HEADER - len(send_length))
-        
+        self.client.send(send_length)
+        self.client.send(message)

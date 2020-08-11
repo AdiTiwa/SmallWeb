@@ -1,0 +1,5 @@
+label = tk.Label(
+    master = self.window,
+    text = 'Hello'
+)
+label.pack()

@@ -1,0 +1,4 @@
+label = tk.Label(
+  master = self.window,
+  text = 'There has been an error in rendering your file.'
+)
